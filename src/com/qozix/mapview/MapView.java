@@ -19,6 +19,7 @@ import com.qozix.mapview.markers.CalloutManager;
 import com.qozix.mapview.markers.MarkerManager;
 import com.qozix.mapview.paths.PathManager;
 import com.qozix.mapview.tiles.MapTileDecoder;
+import com.qozix.mapview.tiles.MapTileEnhancer;
 import com.qozix.mapview.tiles.TileManager;
 import com.qozix.mapview.tiles.TileRenderListener;
 import com.qozix.mapview.viewmanagers.DownsampleManager;
@@ -187,6 +188,10 @@ public class MapView extends ZoomPanLayout {
 	public void setTileDecoder( MapTileDecoder decoder ) {
 		tileManager.setDecoder( decoder );
 	}
+
+    public void setTileEnhancer( MapTileEnhancer enhancer ) {
+        tileManager.setEnhancer( enhancer );
+    }
 	
 	//------------------------------------------------------------------------------------
 	// Zoom Management API

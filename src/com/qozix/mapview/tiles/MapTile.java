@@ -7,6 +7,7 @@ import android.content.Context;
 import android.content.res.AssetManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
 import android.util.Log;
 import android.view.ViewGroup;
 import android.view.ViewParent;
@@ -104,7 +105,7 @@ public class MapTile {
 		return pattern.replace( "%col%", Integer.toString( column ) ).replace( "%row%", Integer.toString( row ) );
 	}
 
-	public void decode( Context context, MapTileCache cache, MapTileDecoder decoder ) {
+	public void decode( Context context, MapTileCache cache, MapTileDecoder decoder, MapTileEnhancer enhancer ) {
 		if ( hasBitmap ) {
 			return;
 		}
@@ -113,6 +114,7 @@ public class MapTile {
 			Bitmap cached = cache.getBitmap( fileName );
 			if ( cached != null ) {
 				bitmap = cached;
+                enhanceBitmap(enhancer);
 				return;
 			}	
 		}			
@@ -121,7 +123,19 @@ public class MapTile {
 		if ( cache != null ) {
 			cache.addBitmap( fileName, bitmap );
 		}
-	}
+
+        enhanceBitmap(enhancer);
+    }
+
+    private void enhanceBitmap(MapTileEnhancer enhancer) {
+        if (enhancer != null) {
+            Bitmap enhancedBitmap = Bitmap.createBitmap(bitmap.getWidth(), bitmap.getHeight(), Bitmap.Config.RGB_565);
+            Canvas canvas = new Canvas(enhancedBitmap);
+            canvas.drawBitmap(bitmap, 0, 0, null);
+            enhancer.drawOn(canvas, getZoom(), getRow(), getColumn());
+            bitmap = enhancedBitmap;
+        }
+    }
 
 	public boolean render( Context context ) {
 		if ( imageView == null ) {
