@@ -18,11 +18,6 @@ import android.util.Log;
 public class MapTileDecoderHttp implements MapTileDecoder {
 
     private static final String TAG =  MapTileDecoderHttp.class.getSimpleName();
-
-	private static final BitmapFactory.Options OPTIONS = new BitmapFactory.Options();
-	static {
-		OPTIONS.inPreferredConfig = Bitmap.Config.RGB_565;
-	}
 	
 	@Override
 	public Bitmap decode( String fileName, Context context ) {
@@ -41,7 +36,7 @@ public class MapTileDecoderHttp implements MapTileDecoder {
             input = connection.getInputStream();
             if (input != null) {
                 try {
-                    return BitmapFactory.decodeStream( input, null, OPTIONS );
+                    return BitmapFactory.decodeStream( input, null, null );
                 } catch ( OutOfMemoryError oom ) {
                     // oom - you can try sleeping (this method won't be called in the UI thread) or try again (or give up)
                 } catch ( Exception e ) {
