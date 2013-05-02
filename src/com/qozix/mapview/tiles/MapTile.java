@@ -120,7 +120,7 @@ public class MapTile {
 		}			
 		bitmap = decoder.decode( fileName, context );
 		hasBitmap = ( bitmap != null );
-		if ( cache != null ) {
+		if ( cache != null && hasBitmap ) {
 			cache.addBitmap( fileName, bitmap );
 		}
 
