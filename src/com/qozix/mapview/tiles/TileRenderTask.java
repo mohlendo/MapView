@@ -6,12 +6,13 @@ import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import android.os.AsyncTask;
+import android.util.Log;
 
 class TileRenderTask extends AsyncTask<Void, MapTile, Void> {
 
-	private final WeakReference<TileManager> reference;
-    private final AtomicInteger numberOfTilesToRender = new AtomicInteger();
     private final ExecutorService executor = Executors.newCachedThreadPool();
+    private final WeakReference<TileManager> reference;
+    private final AtomicInteger numberOfTilesToRender = new AtomicInteger();
 
     // package level access
 	TileRenderTask( TileManager tm ) {
@@ -56,6 +57,7 @@ class TileRenderTask extends AsyncTask<Void, MapTile, Void> {
 
                     @Override
                     protected MapTile doInBackground(MapTile... params) {
+                        Log.d("MapTile render", Thread.currentThread().getName());
                         numberOfTilesToRender.incrementAndGet();
                         TileManager tileManager = reference.get();
                         if ( tileManager == null ) {
@@ -99,8 +101,22 @@ class TileRenderTask extends AsyncTask<Void, MapTile, Void> {
 
 	@Override
 	protected void onCancelled() {
-        //shutdown all the tile render tasks
-        executor.shutdownNow();
+        executor.shutdown(); // Disable new tasks from being submitted
+        try {
+            // Wait a while for existing tasks to terminate
+            if (!executor.awaitTermination(30, TimeUnit.SECONDS)) {
+                executor.shutdownNow(); // Cancel currently executing tasks
+                // Wait a while for tasks to respond to being cancelled
+                if (!executor.awaitTermination(30, TimeUnit.SECONDS))
+                    System.err.println("Pool did not terminate");
+            }
+        } catch (InterruptedException ie) {
+            // (Re-)Cancel if current thread also interrupted
+            executor.shutdownNow();
+            // Preserve interrupt status
+            Thread.currentThread().interrupt();
+        }
+
 		// have we been stopped or dereffed?
 		TileManager tileManager = reference.get();
 		// if not go ahead but check other cancel states
