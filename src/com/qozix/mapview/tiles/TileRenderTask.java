@@ -6,11 +6,10 @@ import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import android.os.AsyncTask;
-import android.util.Log;
 
 class TileRenderTask extends AsyncTask<Void, MapTile, Void> {
 
-    private final ExecutorService executor = Executors.newCachedThreadPool();
+    private static final ExecutorService executor = Executors.newCachedThreadPool();
     private final WeakReference<TileManager> reference;
     private final AtomicInteger numberOfTilesToRender = new AtomicInteger();
 
@@ -57,7 +56,6 @@ class TileRenderTask extends AsyncTask<Void, MapTile, Void> {
 
                     @Override
                     protected MapTile doInBackground(MapTile... params) {
-                        Log.d("MapTile render", Thread.currentThread().getName());
                         numberOfTilesToRender.incrementAndGet();
                         TileManager tileManager = reference.get();
                         if ( tileManager == null ) {

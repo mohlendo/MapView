@@ -1,5 +1,6 @@
 package com.qozix.mapview.tiles;
 
+import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
@@ -33,15 +34,13 @@ public class MapTileDecoderHttp implements MapTileDecoder {
         InputStream input = null;
         try {
             connection = (HttpURLConnection) url.openConnection();
-            input = connection.getInputStream();
-            if (input != null) {
-                try {
-                    return BitmapFactory.decodeStream( input, null, null );
-                } catch ( OutOfMemoryError oom ) {
-                    // oom - you can try sleeping (this method won't be called in the UI thread) or try again (or give up)
-                } catch ( Exception e ) {
-                    // unknown error decoding bitmap
-                }
+            input = new BufferedInputStream(connection.getInputStream());
+            try {
+                return BitmapFactory.decodeStream( input, null, null );
+            } catch ( OutOfMemoryError oom ) {
+                // oom - you can try sleeping (this method won't be called in the UI thread) or try again (or give up)
+            } catch ( Exception e ) {
+                // unknown error decoding bitmap
             }
         } catch ( IOException e ) {
             Log.e(TAG, "Cannot download tile for URL: " + fileName, e);
