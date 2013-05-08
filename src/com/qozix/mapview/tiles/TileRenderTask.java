@@ -77,6 +77,9 @@ class TileRenderTask extends AsyncTask<Void, MapTile, Void> {
 
                     @Override
                     protected void onPostExecute(MapTile mapTile) {
+                        if (mapTile == null) { //sometimes that is null...
+                            return;
+                        }
                         TileManager tileManager = reference.get();
                         if(tileManager != null) {
                             // if not cancelled render the tile

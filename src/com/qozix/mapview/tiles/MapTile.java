@@ -128,12 +128,14 @@ public class MapTile {
     }
 
     private void enhanceBitmap(MapTileEnhancer enhancer) {
-        if (enhancer != null && bitmap!= null) {
+        if (enhancer != null && bitmap != null) {
             Bitmap enhancedBitmap = Bitmap.createBitmap(bitmap.getWidth(), bitmap.getHeight(), Bitmap.Config.ARGB_8888);
             Canvas canvas = new Canvas(enhancedBitmap);
-            canvas.drawBitmap(bitmap, 0, 0, null);
-            enhancer.drawOn(canvas, getZoom(), getRow(), getColumn());
-            bitmap = enhancedBitmap;
+            if(bitmap != null) {
+                canvas.drawBitmap(bitmap, 0, 0, null);
+                enhancer.drawOn(canvas, getZoom(), getRow(), getColumn());
+                bitmap = enhancedBitmap;
+            }
         }
     }
 
