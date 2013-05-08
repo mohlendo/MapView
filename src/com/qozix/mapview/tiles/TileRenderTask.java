@@ -9,7 +9,7 @@ import android.os.AsyncTask;
 
 class TileRenderTask extends AsyncTask<Void, MapTile, Void> {
 
-    private static final ExecutorService executor = Executors.newCachedThreadPool();
+    private final ExecutorService executor = Executors.newCachedThreadPool();
     private final WeakReference<TileManager> reference;
     private final AtomicInteger numberOfTilesToRender = new AtomicInteger();
 
