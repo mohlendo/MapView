@@ -20,14 +20,14 @@ import com.jakewharton.DiskLruCache;
 
 public class MapTileCache {
 	
-	private static final int DISK_CACHE_CAPACITY = 8 * 1024;
+	private static final int DISK_CACHE_CAPACITY = 25 * 1024;
 	private static final int IO_BUFFER_SIZE = 8 * 1024;
 	
 	private static final int COMPRESSION_QUALITY = 40;
 	
 	private static final BitmapFactory.Options BITMAPFACTORY_OPTIONS = new BitmapFactory.Options();
 	static {
-		BITMAPFACTORY_OPTIONS.inPreferredConfig = Bitmap.Config.RGB_565;
+		BITMAPFACTORY_OPTIONS.inPreferredConfig = Bitmap.Config.ARGB_8888;
 	}
 
 	private MessageDigest digest;

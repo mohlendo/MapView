@@ -173,10 +173,6 @@ public class TileManager extends ScalingLayout implements ZoomListener {
 			}
 			tileGroup.removeAllViews();
 		}
-		// clear the cache
-		if ( cache != null ) {
-			cache.clear();
-		}
 	}
 
 	private ScalingLayout getCurrentTileGroup() {
