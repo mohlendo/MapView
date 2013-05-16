@@ -72,13 +72,17 @@ class TileRenderTask extends AsyncTask<Void, MapTile, Void> {
                             return null;
                         }
                         MapTile mapTile = params[0];
-                        //decode the map tile bitmap
+                        // decode the map tile bitmap
                         tileManager.decodeIndividualTile(mapTile);
                         return mapTile;
                     }
 
                     @Override
                     protected void onPostExecute(MapTile mapTile) {
+                        // stop if tile is null
+                        if (mapTile == null) {
+                            return;
+                        }
                         TileManager tileManager = reference.get();
                         if(tileManager != null) {
                             // if not cancelled render the tile
@@ -86,7 +90,7 @@ class TileRenderTask extends AsyncTask<Void, MapTile, Void> {
                                 tileManager.renderIndividualTile(mapTile);
                             }
 
-                            //when we have finished every render task, inform the manager
+                            // when we have finished every render task, inform the manager
                             if(numberOfTilesToRender.decrementAndGet() == 0) {
                                 tileManager.onRenderTaskPostExecute();
                             }
@@ -124,5 +128,4 @@ class TileRenderTask extends AsyncTask<Void, MapTile, Void> {
 			tileManager.onRenderTaskCancelled();
 		}
 	}
-
 }
