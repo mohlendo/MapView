@@ -15,7 +15,6 @@ public class MapTileDecoderAssets implements MapTileDecoder {
 		OPTIONS.inPreferredConfig = Bitmap.Config.RGB_565;
 	}
 	
-	@Override
 	public Bitmap decode( String fileName, Context context ) {
 		AssetManager assets = context.getAssets();
 		try {

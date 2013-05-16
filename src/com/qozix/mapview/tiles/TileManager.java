@@ -2,14 +2,22 @@ package com.qozix.mapview.tiles;
 
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.os.AsyncTask;
 import android.os.Handler;
 import android.os.Message;
+import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.ImageLoader;
+import com.android.volley.toolbox.Volley;
 import com.qozix.layouts.FixedLayout;
 import com.qozix.layouts.ScalingLayout;
 import com.qozix.mapview.zoom.ZoomLevel;
@@ -34,7 +42,6 @@ public class TileManager extends ScalingLayout implements ZoomListener {
 	
 	private MapTileCache cache;
 	private ZoomLevel zoomLevelToRender;
-	private TileRenderTask lastRunRenderTask;
 	private ScalingLayout currentTileGroup;
 	private ZoomManager zoomManager;
 
@@ -46,9 +53,24 @@ public class TileManager extends ScalingLayout implements ZoomListener {
 	
 	private TileRenderHandler handler;
 
+    private RequestQueue requestQueue;
+    private ImageLoader imageLoader;
+
 	public TileManager( Context context, ZoomManager zm ) {
 		super( context );
-		zoomManager = zm;
+        requestQueue = Volley.newRequestQueue(context);
+        imageLoader = new ImageLoader(requestQueue, new ImageLoader.ImageCache() {
+            @Override
+            public Bitmap getBitmap(String url) {
+                return cache.getBitmap(url);
+            }
+
+            @Override
+            public void putBitmap(String url, Bitmap bitmap) {
+                cache.addBitmap(url, bitmap);
+            }
+        });
+        zoomManager = zm;
 		zoomManager.addZoomListener( this );		
 		handler = new TileRenderHandler( this );
 	}
@@ -97,16 +119,12 @@ public class TileManager extends ScalingLayout implements ZoomListener {
 	public void cancelRender() {
 		// hard cancel - this applies to *all* tasks, not just the currently executing task
 		renderIsCancelled = true;
-		// if the currently executing task isn't null...
-		if ( lastRunRenderTask != null ) {
-			// ... and it's in a cancellable state
-			if ( lastRunRenderTask.getStatus() != AsyncTask.Status.FINISHED ) {
-				// ... then squash it
-				lastRunRenderTask.cancel( true );
-			}
-		}
-		// give it to gc
-		lastRunRenderTask = null;
+        requestQueue.cancelAll(new RequestQueue.RequestFilter() {
+            @Override
+            public boolean apply(Request<?> request) {
+                return true;
+            }
+        });
 	}
 
 	public void suppressRender() {
@@ -224,15 +242,38 @@ public class TileManager extends ScalingLayout implements ZoomListener {
 		}
 		// if we made it here, then replace the old list with the new list
 		scheduledToRender = intersections;
-		// cancel task if it's already running
-		if ( lastRunRenderTask != null ) {
-			if ( lastRunRenderTask.getStatus() != AsyncTask.Status.FINISHED ) {
-				lastRunRenderTask.cancel( true );
-			}
-		}
-		// start a new one
-		lastRunRenderTask = new TileRenderTask( this );
-		lastRunRenderTask.execute();
+
+        final AtomicInteger numberOfTilesToRender = new AtomicInteger();
+
+        for (final MapTile tile : scheduledToRender) {
+            numberOfTilesToRender.incrementAndGet();
+
+            imageLoader.get(tile.getFileName(), new ImageLoader.ImageListener() {
+                @Override
+                public void onResponse(ImageLoader.ImageContainer imageContainer, boolean b) {
+                    Bitmap bitmap = imageContainer.getBitmap();
+                    if(bitmap == null) {
+                        return;
+                    }
+
+                    tile.setBitmap(bitmap);
+                    tile.enhanceBitmap(enhancer);
+
+                    renderIndividualTile(tile);
+
+                    //when we have finished every render task, inform the manager
+                    if(numberOfTilesToRender.decrementAndGet() == 0) {
+                        onRenderTaskPostExecute();
+                    }
+                }
+
+                @Override
+                public void onErrorResponse(VolleyError volleyError) {
+                    Log.e(TAG, "error: " + volleyError);
+
+                }
+            }, tile.getWidth(), tile.getHeight());
+        }
 	}
 
 	private FixedLayout.LayoutParams getLayoutFromTile( MapTile m ) {

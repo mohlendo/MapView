@@ -24,6 +24,11 @@
 			<artifactId>compatibility-v4</artifactId>
 			<version>12</version>
 		</dependency>
+        <dependency>
+            <groupId>volley</groupId>
+            <artifactId>volley</artifactId>
+            <version>1.0</version>
+        </dependency>
 		
 	</dependencies>
 	<build>

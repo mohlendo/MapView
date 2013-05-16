@@ -127,7 +127,7 @@ public class MapTile {
         enhanceBitmap(enhancer);
     }
 
-    private void enhanceBitmap(MapTileEnhancer enhancer) {
+    public void enhanceBitmap(MapTileEnhancer enhancer) {
         if (enhancer != null && bitmap != null) {
             Bitmap enhancedBitmap = Bitmap.createBitmap(bitmap.getWidth(), bitmap.getHeight(), Bitmap.Config.ARGB_8888);
             Canvas canvas = new Canvas(enhancedBitmap);
@@ -139,6 +139,11 @@ public class MapTile {
         }
     }
 
+    public void setBitmap(Bitmap bitmap) {
+        this.bitmap = bitmap;
+        hasBitmap = true;
+    }
+
 	public boolean render( Context context ) {
 		if ( imageView == null ) {
 			imageView = new ImageView( context );
@@ -146,7 +151,7 @@ public class MapTile {
 			imageView.setScaleType( ImageView.ScaleType.MATRIX );
 		}
 		imageView.setImageBitmap( bitmap );
-        bitmap = null;
+        //bitmap = null;
 		return true;
 	}
 
