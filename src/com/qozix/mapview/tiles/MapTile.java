@@ -129,7 +129,7 @@ public class MapTile {
 
     public void enhanceBitmap(MapTileEnhancer enhancer) {
         if (enhancer != null && bitmap != null) {
-            Bitmap enhancedBitmap = Bitmap.createBitmap(bitmap.getWidth(), bitmap.getHeight(), Bitmap.Config.ARGB_8888);
+            Bitmap enhancedBitmap = Bitmap.createBitmap(bitmap.getWidth(), bitmap.getHeight(), Bitmap.Config.RGB_565);
             Canvas canvas = new Canvas(enhancedBitmap);
             if(bitmap != null) {
                 canvas.drawBitmap(bitmap, 0, 0, null);
