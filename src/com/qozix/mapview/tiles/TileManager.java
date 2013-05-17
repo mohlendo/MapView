@@ -257,14 +257,27 @@ public class TileManager extends ScalingLayout implements ZoomListener {
                     }
 
                     tile.setBitmap(bitmap);
-                    tile.enhanceBitmap(enhancer);
 
-                    renderIndividualTile(tile);
+                    // run the enhancer
+                    (new AsyncTask<MapTile,Void,MapTile>() {
 
-                    //when we have finished every render task, inform the manager
-                    if(numberOfTilesToRender.decrementAndGet() == 0) {
-                        onRenderTaskPostExecute();
-                    }
+                        @Override
+                        protected MapTile doInBackground(MapTile... params) {
+                            MapTile tile = params[0];
+                            tile.enhanceBitmap(enhancer);
+                            return tile;
+                        }
+
+                        @Override
+                        protected void onPostExecute(MapTile mapTile) {
+                            renderIndividualTile(mapTile);
+
+                            //when we have finished every render task, inform the manager
+                            if(numberOfTilesToRender.decrementAndGet() == 0) {
+                                onRenderTaskPostExecute();
+                            }
+                        }
+                    }).execute(tile);
                 }
 
                 @Override
