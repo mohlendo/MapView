@@ -7,8 +7,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.os.AsyncTask;
-import android.os.Handler;
-import android.os.Message;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
@@ -34,7 +32,6 @@ public class TileManager extends ScalingLayout implements ZoomListener {
 	private LinkedList<MapTile> scheduledToRender = new LinkedList<MapTile>();
 	private LinkedList<MapTile> alreadyRendered = new LinkedList<MapTile>();
 
-	private MapTileDecoder decoder = new MapTileDecoderAssets();
     private MapTileEnhancer enhancer;
 	private HashMap<Integer, ScalingLayout> tileGroups = new HashMap<Integer, ScalingLayout>();
 
@@ -73,10 +70,6 @@ public class TileManager extends ScalingLayout implements ZoomListener {
         zoomManager = zm;
 		zoomManager.addZoomListener( this );		
 		handler = new TileRenderHandler( this );
-	}
-	
-	public void setDecoder( MapTileDecoder d ){
-		decoder = d;
 	}
 
     public void setEnhancer( MapTileEnhancer e) {
@@ -351,10 +344,6 @@ public class TileManager extends ScalingLayout implements ZoomListener {
 	
 	LinkedList<MapTile> getRenderList(){
 		return new LinkedList<MapTile>( scheduledToRender );
-	}
-	
-	void decodeIndividualTile( MapTile m ) {
-		m.decode( getContext(), cache, decoder, enhancer );
 	}
 
 	void renderIndividualTile( MapTile m ) {

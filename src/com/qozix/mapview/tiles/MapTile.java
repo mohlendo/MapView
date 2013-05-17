@@ -1,137 +1,111 @@
 package com.qozix.mapview.tiles;
 
-import java.io.IOException;
-import java.io.InputStream;
-
 import android.content.Context;
-import android.content.res.AssetManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
-import android.util.Log;
 import android.view.ViewGroup;
 import android.view.ViewParent;
 import android.widget.ImageView;
 
 public class MapTile {
 
-	private static final String TAG = MapTile.class.getSimpleName();
+    private static final String TAG = MapTile.class.getSimpleName();
 
-	private static final BitmapFactory.Options OPTIONS = new BitmapFactory.Options();
-	static {
-		OPTIONS.inPreferredConfig = Bitmap.Config.RGB_565;
-	}
+    private static final BitmapFactory.Options OPTIONS = new BitmapFactory.Options();
 
-	private int zoom;
+    static {
+        OPTIONS.inPreferredConfig = Bitmap.Config.RGB_565;
+    }
 
-	private int row;
-	private int column;
-	private int left;
-	private int top;
-	private int width;
-	private int height;
-	private int right;
-	private int bottom;
+    private int zoom;
 
-	private String pattern;
+    private int row;
+    private int column;
+    private int left;
+    private int top;
+    private int width;
+    private int height;
+    private int right;
+    private int bottom;
 
-	private ImageView imageView;
-	private Bitmap bitmap;
+    private String pattern;
 
-	private boolean hasBitmap;
+    private ImageView imageView;
+    private Bitmap bitmap;
 
-	public MapTile() {
+    private boolean hasBitmap;
 
-	}
+    public MapTile() {
 
-	public MapTile( int z, int r, int c, int w, int h, String p ) {
-		set( z, r, c, w, h, p );
-	}
+    }
 
-	public void set( int z, int r, int c, int w, int h, String p ) {
-		zoom = z;
-		row = r;
-		column = c;
-		width = w;
-		height = h;
-		top = r * h;
-		left = c * w;
-		right = left + w;
-		bottom = top + h;
-		pattern = p;
-	}
+    public MapTile(int z, int r, int c, int w, int h, String p) {
+        set(z, r, c, w, h, p);
+    }
 
-	public int getRow() {
-		return row;
-	}
+    public void set(int z, int r, int c, int w, int h, String p) {
+        zoom = z;
+        row = r;
+        column = c;
+        width = w;
+        height = h;
+        top = r * h;
+        left = c * w;
+        right = left + w;
+        bottom = top + h;
+        pattern = p;
+    }
 
-	public int getColumn() {
-		return column;
-	}
+    public int getRow() {
+        return row;
+    }
 
-	public int getLeft() {
-		return left;
-	}
+    public int getColumn() {
+        return column;
+    }
 
-	public int getTop() {
-		return top;
-	}
+    public int getLeft() {
+        return left;
+    }
 
-	public int getWidth() {
-		return width;
-	}
+    public int getTop() {
+        return top;
+    }
 
-	public int getHeight() {
-		return height;
-	}
+    public int getWidth() {
+        return width;
+    }
 
-	public int getBottom() {
-		return bottom;
-	}
+    public int getHeight() {
+        return height;
+    }
 
-	public int getRight() {
-		return right;
-	}
+    public int getBottom() {
+        return bottom;
+    }
 
-	public int getZoom() {
-		return zoom;
-	}
+    public int getRight() {
+        return right;
+    }
 
-	public ImageView getImageView() {
-		return imageView;
-	}
+    public int getZoom() {
+        return zoom;
+    }
 
-	public String getFileName() {
-		return pattern.replace( "%col%", Integer.toString( column ) ).replace( "%row%", Integer.toString( row ) );
-	}
+    public ImageView getImageView() {
+        return imageView;
+    }
 
-	public void decode( Context context, MapTileCache cache, MapTileDecoder decoder, MapTileEnhancer enhancer ) {
-		if ( hasBitmap ) {
-			return;
-		}
-		String fileName = getFileName();
-		if ( cache != null ) {
-			Bitmap cached = cache.getBitmap( fileName );
-			if ( cached != null ) {
-				bitmap = cached;
-                enhanceBitmap(enhancer);
-				return;
-			}	
-		}			
-		bitmap = decoder.decode( fileName, context );
-		hasBitmap = ( bitmap != null );
-		if ( cache != null && hasBitmap ) {
-			cache.addBitmap( fileName, bitmap );
-		}
-
-        enhanceBitmap(enhancer);
+    public String getFileName() {
+        return pattern.replace("%col%", Integer.toString(column)).replace("%row%", Integer.toString(row));
     }
 
     public void enhanceBitmap(MapTileEnhancer enhancer) {
         if (enhancer != null && bitmap != null) {
             Bitmap enhancedBitmap = Bitmap.createBitmap(bitmap.getWidth(), bitmap.getHeight(), Bitmap.Config.RGB_565);
             Canvas canvas = new Canvas(enhancedBitmap);
-            if(bitmap != null) {
+            if (bitmap != null) {
                 canvas.drawBitmap(bitmap, 0, 0, null);
                 enhancer.drawOn(canvas, getZoom(), getRow(), getColumn());
                 bitmap = enhancedBitmap;
@@ -144,45 +118,45 @@ public class MapTile {
         hasBitmap = true;
     }
 
-	public boolean render( Context context ) {
-		if ( imageView == null ) {
-			imageView = new ImageView( context );
-			imageView.setAdjustViewBounds( false );
-			imageView.setScaleType( ImageView.ScaleType.MATRIX );
-		}
-		imageView.setImageBitmap( bitmap );
+    public boolean render(Context context) {
+        if (imageView == null) {
+            imageView = new ImageView(context);
+            imageView.setAdjustViewBounds(false);
+            imageView.setScaleType(ImageView.ScaleType.MATRIX);
+        }
+        imageView.setImageBitmap(bitmap);
         //bitmap = null;
-		return true;
-	}
+        return true;
+    }
 
-	public void destroy() {
-		if ( imageView != null ) {
-			imageView.setImageBitmap( null );
-			ViewParent parent = imageView.getParent();
-			if ( parent != null && parent instanceof ViewGroup ) {
-				ViewGroup group = (ViewGroup) parent;
-				group.removeView( imageView );
-			}
-			imageView = null;
-		}
-		hasBitmap = false;
-		bitmap = null;
-	}
+    public void destroy() {
+        if (imageView != null) {
+            imageView.setImageBitmap(null);
+            ViewParent parent = imageView.getParent();
+            if (parent != null && parent instanceof ViewGroup) {
+                ViewGroup group = (ViewGroup) parent;
+                group.removeView(imageView);
+            }
+            imageView = null;
+        }
+        hasBitmap = false;
+        bitmap = null;
+    }
 
-	@Override
-	public boolean equals( Object o ) {
-		if ( o instanceof MapTile ) {
-			MapTile m = (MapTile) o;
-			return ( m.getRow() == getRow() )
-				&& ( m.getColumn() == getColumn() )
-				&& ( m.getZoom() == getZoom() );
-		}
-		return false;
-	}
+    @Override
+    public boolean equals(Object o) {
+        if (o instanceof MapTile) {
+            MapTile m = (MapTile) o;
+            return (m.getRow() == getRow())
+                    && (m.getColumn() == getColumn())
+                    && (m.getZoom() == getZoom());
+        }
+        return false;
+    }
 
-	@Override
-	public String toString() {
-		return "(left=" + left + ", top=" + top + ", right=" + right + ", bottom=" + bottom + ")";
-	}
+    @Override
+    public String toString() {
+        return "(left=" + left + ", top=" + top + ", right=" + right + ", bottom=" + bottom + ")";
+    }
 
 }

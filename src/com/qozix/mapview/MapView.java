@@ -8,7 +8,6 @@ import java.util.List;
 import android.content.Context;
 import android.graphics.Point;
 import android.graphics.Rect;
-import android.util.Log;
 import android.view.View;
 
 import com.qozix.geom.Coordinate;
@@ -18,7 +17,6 @@ import com.qozix.mapview.hotspots.HotSpotManager;
 import com.qozix.mapview.markers.CalloutManager;
 import com.qozix.mapview.markers.MarkerManager;
 import com.qozix.mapview.paths.PathManager;
-import com.qozix.mapview.tiles.MapTileDecoder;
 import com.qozix.mapview.tiles.MapTileEnhancer;
 import com.qozix.mapview.tiles.TileManager;
 import com.qozix.mapview.tiles.TileRenderListener;
@@ -176,17 +174,6 @@ public class MapView extends ZoomPanLayout {
 	 */
 	public void setCacheEnabled( boolean shouldCache ) {
 		tileManager.setCacheEnabled( shouldCache );
-	}
-	
-	/**
-	 * Sets a custom class to perform the decode operation when tile bitmaps are requested.
-	 * By default, a MapTileDecoder implementation is provided that renders bitmaps from the context's Assets,
-	 * but alternative implementations could be used that fetch images via HTTP, or from the SD card, or resources, SVG, etc.
-	 * {@link MapTileDecoderHttp} is an example of such an implementation.
-	 * @param decoder (MapTileDecoder) A class instance that implements MapTileDecoder, and must define a decode method, which accepts a String file name and a Context object, and returns a Bitmap
-	 */
-	public void setTileDecoder( MapTileDecoder decoder ) {
-		tileManager.setDecoder( decoder );
 	}
 
     public void setTileEnhancer( MapTileEnhancer enhancer ) {
