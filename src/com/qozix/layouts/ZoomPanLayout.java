@@ -494,8 +494,8 @@ public class ZoomPanLayout extends ViewGroup {
 	private void constrainPoint( Point point ) {
 		int x = point.x;
 		int y = point.y;
-		int mx = Math.max( 0, Math.min( x, getLimitX() ) );
-		int my = Math.max( 0, Math.min( y, getLimitY() ) );
+		int mx = Math.max( getMinX(), Math.min( x, getLimitX() ) );
+		int my = Math.max( getMinY(), Math.min( y, getLimitY() ) );
 		if ( x != mx || y != my ) {
 			point.set( mx, my );
 		}
@@ -512,12 +512,20 @@ public class ZoomPanLayout extends ViewGroup {
 		}
 	}
 
+    private int getMinX() {
+        return -(getWidth()/2);
+    }
+
+    private int getMinY() {
+        return -(getHeight()/2);
+    }
+
 	private int getLimitX() {
-		return scaledWidth - getWidth();
+		return scaledWidth - getWidth() + getWidth()/2;
 	}
 
 	private int getLimitY() {
-		return scaledHeight - getHeight();
+		return scaledHeight - getHeight() + getHeight()/2;
 	}
 
 
@@ -604,7 +612,7 @@ public class ZoomPanLayout extends ViewGroup {
 		double yv = velocity.getYVelocity();
 		double totalVelocity = Math.abs( xv ) + Math.abs( yv );
 		if ( totalVelocity > MINIMUM_VELOCITY ) {
-			scroller.fling( getScrollX(), getScrollY(), (int) -xv, (int) -yv, 0, getLimitX(), 0, getLimitY() );
+			scroller.fling( getScrollX(), getScrollY(), (int) -xv, (int) -yv, getMinX(), getLimitX(), getMinY(), getLimitY() );
 			invalidate();
 			return true;
 		}
