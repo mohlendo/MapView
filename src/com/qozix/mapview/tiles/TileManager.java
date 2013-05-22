@@ -2,8 +2,6 @@ package com.qozix.mapview.tiles;
 
 import java.util.HashMap;
 import java.util.LinkedList;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import android.content.Context;
@@ -54,7 +52,6 @@ public class TileManager extends ScalingLayout implements ZoomListener {
 
     private RequestQueue requestQueue;
     private ImageLoader imageLoader;
-    private ExecutorService executorService = Executors.newFixedThreadPool(4);
 
 	public TileManager( Context context, ZoomManager zm ) {
 		super( context );
@@ -273,7 +270,7 @@ public class TileManager extends ScalingLayout implements ZoomListener {
                                 onRenderTaskPostExecute();
                             }
                         }
-                    }).executeOnExecutor(executorService, tile);
+                    }).execute(tile);
                 }
 
                 @Override
