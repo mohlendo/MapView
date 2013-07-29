@@ -20,7 +20,6 @@ import com.qozix.mapview.paths.PathManager;
 import com.qozix.mapview.tiles.MapTileEnhancer;
 import com.qozix.mapview.tiles.TileManager;
 import com.qozix.mapview.tiles.TileRenderListener;
-import com.qozix.mapview.viewmanagers.DownsampleManager;
 import com.qozix.mapview.viewmanagers.ViewCurator;
 import com.qozix.mapview.zoom.ZoomLevel;
 import com.qozix.mapview.zoom.ZoomListener;
@@ -64,8 +63,7 @@ public class MapView extends ZoomPanLayout {
 	
 	private ZoomManager zoomManager = new ZoomManager();
 	private HotSpotManager hotSpotManager = new HotSpotManager();
-	private DownsampleManager downsampleManager = new DownsampleManager();
-	
+
 	private TileManager tileManager;
 	private MarkerManager markerManager;
 	private PathManager pathManager;
@@ -270,6 +268,16 @@ public class MapView extends ZoomPanLayout {
 	public void unlockZoom(){
 		zoomManager.unlockZoom();
 	}
+
+	/**
+	 *  "pads" the viewport by the number of pixels passed.  e.g., setViewportPadding( 100 ) instructs the
+	 *  MapView to interpret it's actual viewport offset by 100 pixels in each direction (top, left,
+	 *  right, bottom), so more tiles will qualify for "visible" status when intersections are calculated.
+	 * @param padding (int) the number of pixels to pad the viewport by
+	 */
+	public void setViewportPadding( int padding ) {
+		zoomManager.setPadding( padding );
+	}
 	
 	//------------------------------------------------------------------------------------
 	// Geolocation API
@@ -387,7 +395,7 @@ public class MapView extends ZoomPanLayout {
 	 * @param absolute (boolean) true to always use pixel values and omit geolocation translation
 	 */
 	public void moveTo( double x, double y, boolean absolute ) {
-		int[] position = getPosition( x, y, absolute );
+		int[] position = getPosition( x, y, absolute, true );
 		Point point = new Point( position[0], position[1] );
 		point.x *= getScale();
 		point.y *= getScale();
@@ -416,7 +424,7 @@ public class MapView extends ZoomPanLayout {
 	 * @param absolute (boolean) true to always use pixel values and omit geolocation translation
 	 */
 	public void moveToAndCenter( double x, double y, boolean absolute ) {
-		int[] position = getPosition( x, y, absolute );
+		int[] position = getPosition( x, y, absolute, true );
 		Point point = new Point( position[0], position[1] );
 		point.x *= getScale();
 		point.y *= getScale();
@@ -445,7 +453,7 @@ public class MapView extends ZoomPanLayout {
 	 * @param absolute (boolean) true to always use pixel values and omit geolocation translation
 	 */
 	public void slideTo( double x, double y, boolean absolute ){
-		int[] position = getPosition( x, y, absolute );
+		int[] position = getPosition( x, y, absolute, true );
 		Point point = new Point( position[0], position[1] );
 		point.x *= getScale();
 		point.y *= getScale();
@@ -474,7 +482,7 @@ public class MapView extends ZoomPanLayout {
 	 * @param absolute (boolean) true to always use pixel values and omit geolocation translation
 	 */	
 	public void slideToAndCenter( double x, double y, boolean absolute ) {
-		int[] position = getPosition( x, y, absolute );
+		int[] position = getPosition( x, y, absolute, true );
 		Point point = new Point( position[0], position[1] );
 		point.x *= getScale();
 		point.y *= getScale();
@@ -853,13 +861,7 @@ public class MapView extends ZoomPanLayout {
 		int h = zoomManager.getComputedCurrentHeight();
 		setSize( w, h );
 	}
-	
-	// show downsampled background image for the current zoom level
-	private void updateDownsample() {
-		ZoomLevel zoomLevel = zoomManager.getCurrentZoomLevel();
-		String downsample = zoomLevel.getDownsample();
-		downsampleManager.setDownsample( getClip(), downsample );
-	}
+
 	
 	// let the zoom manager know what tiles to show based on our position and dimensions
 	private void updateViewport(){
@@ -877,15 +879,24 @@ public class MapView extends ZoomPanLayout {
 
 	// private geolocation helper
 	private int[] getPosition( double x, double y, boolean absolute ){
+		return getPosition( x, y, absolute, false );
+	}
+	
+	private int[] getPosition( double x, double y, boolean absolute, boolean shouldScale ){
 		int[] position = new int[2];
 		if ( !absolute && isUsingGeolocation ){
 			Coordinate c = new Coordinate( x, y );
 			Point p = geolocator.translate( c );
-			x = p.x;
-			y = p.y;
+			position[0] = p.x;
+			position[1] = p.y;
+		} else {
+			position[0] = (int) x;
+			position[1] = (int) y;
 		}
-		position[0] = (int) x;
-		position[1] = (int) y;
+		if( shouldScale ) {
+			position[0] *= getScale();
+			position[1] *= getScale();
+		}		
 		return position;
 	}
 	
@@ -953,7 +964,6 @@ public class MapView extends ZoomPanLayout {
 		@Override
 		public void onZoomLevelChanged( int oldZoom, int currentZoom ) {
 			updateClipFromCurrentZoom();
-			updateDownsample();
 			requestRender();
 			for ( MapEventListener listener : mapEventListeners ) {
 				listener.onZoomLevelChanged( oldZoom, currentZoom );
